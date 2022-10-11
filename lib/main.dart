@@ -14,6 +14,8 @@ void main() => runApp(MaterialApp(
       backgroundColor: Colors.deepPurpleAccent,
       systemOverlayStyle: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -22,7 +24,7 @@ void main() => runApp(MaterialApp(
     textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: Colors.deepPurpleAccent,
-        )
+        ),
     ),
   ),
   title: 'BAZMAN',
