@@ -1,0 +1,19 @@
+{
+  "history": "Історія",
+  "copiedToClipboard": "Скопійовано до буфера обміну",
+  "copyToClipboard": "Скопіювати до буфера обміну",
+  "favourites": "Улюблене",
+  "settings": "Налаштування",
+  "aboutApp": "Про додаток",
+  "appDesc": "Мобільний додаток BAZMAN.\n\nCatware-Foundation\nМихаил Лебединец, 2022\n",
+  "sourceCode": "Початковий код",
+  "addToFavourites": "Додати до улюбленого",
+  "failedToLoadBases": "Не вдалося завантажити бази!",
+  "customServerText": "Альтернативний сервер BAZMAN:\nВ форматі: http(s)://bazman.example.com\nЗалиште пустим, щоб використати стандартний сервер bazman.ctw.re",
+  "customServer": "URL сервера",
+  "settingsSaved": "Налаштування збережені",
+  "saveSettings": "Зберегти налаштування",
+  "clearHistory": "Очистити історію",
+  "uploadToServer": "Завантажити на сервер",
+  "selectLanguage": "\nВиберіть мову:"
+}

@@ -1,0 +1,19 @@
+{
+  "history": "History",
+  "copiedToClipboard": "Text copied to clipboard",
+  "copyToClipboard": "Copy to clipboard",
+  "favourites": "Favourites",
+  "settings": "Settings",
+  "aboutApp": "About app",
+  "appDesc": "A BAZMAN mobile app.\n\nCatware-Foundation\nMikhail Lebedinets, 2022\n",
+  "sourceCode": "Source code",
+  "addToFavourites": "Add to favourites",
+  "failedToLoadBases": "Failed to load bases!",
+  "customServerText": "Custom BAZMAN server URL:\nIn format: http(s)://bazman.example.com\nLeave blank to use default bazman.ctw.re server",
+  "customServer": "Custom Server URL",
+  "settingsSaved": "Settings saved",
+  "saveSettings": "Save settings",
+  "clearHistory": "Clear history",
+  "uploadToServer": "Upload to server",
+  "selectLanguage": "\nSelect language:"
+}
