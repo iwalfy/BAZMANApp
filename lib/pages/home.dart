@@ -32,6 +32,7 @@ class _HomeState extends State<Home> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   String _serverUrl = '';
   String _result = 'Давно тебя не было в уличных гонках...';
+  List<Base> _bases = [];
 
   Future<void> _loadSettings() async {
     final SharedPreferences prefs = await _prefs;
@@ -42,31 +43,34 @@ class _HomeState extends State<Home> {
   }
 
   Future<List<Base>> _getBases() async {
-    await _loadSettings();
-    String url = '$_serverUrl/bases';
-    final response = await http.get(Uri.parse(url));
+    if (_bases.isEmpty) {
+      await _loadSettings();
+      String url = '$_serverUrl/bases';
+      final response = await http.get(Uri.parse(url));
 
-    var responseData = json.decode(response.body);
+      var responseData = json.decode(response.body);
 
-    List<Base> bases = [];
-    for (var currentBase in responseData) {
-      Base base = Base(
-        name: currentBase['name'],
-        description: currentBase['description'],
-        author: currentBase['author'],
-        path: currentBase['path'],
-      );
-      bases.add(base);
+      //List<Base> bases = [];
+      for (var currentBase in responseData) {
+        Base base = Base(
+          name: currentBase['name'],
+          description: currentBase['description'],
+          author: currentBase['author'],
+          path: currentBase['path'],
+        );
+        _bases.add(base);
+      }
     }
-    return bases;
+    return _bases;
   }
 
   Future<void> _genBase(int num) async {
     String url = '$_serverUrl/gen?num=$num';
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
-      _result = response.body;
-      setState(() {});
+      setState(() {
+        _result = response.body;
+      });
     }
   }
 
@@ -155,12 +159,15 @@ class _HomeState extends State<Home> {
                   Navigator.pushNamed(context, '/favourites');
                   break;
                 case 2:
-                  Navigator.pushNamed(context, '/settings');
+                  Navigator.pushNamed(context, '/settings').then((_){
+                    _bases = [];
+                    setState((){});
+                  });
                   break;
                 case 3:
                   showAboutDialog(
                     context: context,
-                    applicationName: 'BAZMAN Mobile',
+                    applicationName: 'BAZMAN App',
                     applicationVersion: '0.1.1',
                     children: [
                       Column(

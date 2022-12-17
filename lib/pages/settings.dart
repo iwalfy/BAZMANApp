@@ -55,7 +55,7 @@ class _SettingsState extends State<Settings> {
               controller: _serverUrlController,
               autocorrect: false,
             ),
-            Text(AppLocalizations.of(context)!.selectLanguage),
+            //Text(AppLocalizations.of(context)!.selectLanguage),
           ],
         ),
       ),
