@@ -211,59 +211,64 @@ class _HomeState extends State<Home> {
                   return 600.0;
                 }
               }()),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  SizedBox(
-                    height: availableHeight / 3.2,
-                    width: ((){
-                      if (MediaQuery.of(context).size.width <= 600) {
-                        return MediaQuery.of(context).size.width / 1.3;
-                      } else {
-                        return 460.0;
-                      }
-                    }()),
-                    child: Center(
-                      child: ShaderMask(
-                        shaderCallback: (Rect rect) {
-                          return const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.purple, Colors.transparent, Colors.transparent, Colors.purple],
-                            stops: [0.0, 0.1, 0.9, 1.0],
-                          ).createShader(rect);
-                        },
-                        blendMode: BlendMode.dstOut,
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(20),
-                          physics: const BouncingScrollPhysics(),
-                          child: Text(
-                            _result,
-                            style: const TextStyle(
-                              fontSize: 24,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    SizedBox(
+                      height: availableHeight / 3.2,
+                      width: ((){
+                        if (MediaQuery.of(context).size.width <= 600) {
+                          return MediaQuery.of(context).size.width / 1.3;
+                        } else {
+                          return 460.0;
+                        }
+                      }()),
+                      child: Center(
+                        child: ShaderMask(
+                          shaderCallback: (Rect rect) {
+                            return const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.purple, Colors.transparent, Colors.transparent, Colors.purple],
+                              stops: [0.0, 0.1, 0.9, 1.0],
+                            ).createShader(rect);
+                          },
+                          blendMode: BlendMode.dstOut,
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(20),
+                            physics: const BouncingScrollPhysics(),
+                            child: Text(
+                              _result,
+                              style: const TextStyle(
+                                fontSize: 24,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        onPressed: () => _copyToClipboard(),
-                        icon: const Icon(Icons.copy),
-                        tooltip: AppLocalizations.of(context)!.copyToClipboard,
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.favorite_border),
-                        tooltip: AppLocalizations.of(context)!.addToFavourites,
-                      ),
-                    ],
-                  )
-                ],
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          onPressed: () => _copyToClipboard(),
+                          icon: const Icon(Icons.copy),
+                          tooltip: AppLocalizations.of(context)!.copyToClipboard,
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(Icons.favorite_border),
+                          tooltip: AppLocalizations.of(context)!.addToFavourites,
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
             SizedBox(
