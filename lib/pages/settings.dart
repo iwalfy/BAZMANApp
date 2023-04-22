@@ -50,7 +50,6 @@ class _SettingsState extends State<Settings> {
             TextFormField(
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.customServer,
-                focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.deepPurpleAccent)),
               ),
               controller: _serverUrlController,
               autocorrect: false,

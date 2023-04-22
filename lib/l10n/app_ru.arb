@@ -15,5 +15,7 @@
   "saveSettings": "Сохранить настройки",
   "clearHistory": "Очистить историю",
   "uploadToServer": "Загрузить на сервер",
-  "selectLanguage": "\nВыберете язык:"
+  "selectLanguage": "\nВыберете язык:",
+  "nothingToSeeHere": "Тут ничего нет",
+  "noMoreHistory": "Конец истории"
 }

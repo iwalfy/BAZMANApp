@@ -6,6 +6,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:uuid/uuid.dart';
+
+import 'package:bazman/pages/history.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -26,31 +29,64 @@ class Base {
     required this.author,
     required this.path,
   });
+
+  Map<String, dynamic> toJson() => {
+    "name": name,
+    "description": description,
+    "author": author,
+    "path": path
+  };
 }
 
 class _HomeState extends State<Home> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  late SharedPreferences prefs;
+  bool prefsLoaded = false;
+  bool listLoaded = false;
+  List<HistoryEntry> history = [];
   String _serverUrl = '';
   String _result = 'Давно тебя не было в уличных гонках...';
   List<Base> _bases = [];
+  var uuid = const Uuid();
+  late String currentResultUuid;
+  Codec<String, String> stringToBase64 = utf8.fuse(base64);
 
   Future<void> _loadSettings() async {
-    final SharedPreferences prefs = await _prefs;
+    prefs = await _prefs;
     _serverUrl = prefs.getString('serverUrl') ?? 'https://bmapi.ctw.re';
     if (_serverUrl == '') {
       _serverUrl = 'https://bmapi.ctw.re';
     }
+    var historyB64 = stringToBase64.decode(prefs.getString('history') ?? '');
+    var historyData = [];
+    if (historyB64 != '') {
+      historyData = json.decode(historyB64);
+    }
+
+    history = [];
+    for (var historyEntryData in historyData) {
+      HistoryEntry historyEntry = HistoryEntry(
+        base: historyEntryData["base"],
+        text: historyEntryData["text"],
+        baseNum: historyEntryData["baseNum"],
+        uuid: historyEntryData["uuid"],
+        time: DateTime.fromMillisecondsSinceEpoch(historyEntryData["time"])
+      );
+      history.add(historyEntry);
+    }
+    prefsLoaded = true;
   }
 
   Future<List<Base>> _getBases() async {
-    if (_bases.isEmpty) {
-      await _loadSettings();
+    await _loadSettings();
+    if (_bases.isEmpty && prefsLoaded) {
       String url = '$_serverUrl/bases';
       final response = await http.get(Uri.parse(url));
 
       var responseData = json.decode(response.body);
 
       //List<Base> bases = [];
+      _bases = [];
       for (var currentBase in responseData) {
         Base base = Base(
           name: currentBase['name'],
@@ -60,16 +96,33 @@ class _HomeState extends State<Home> {
         );
         _bases.add(base);
       }
+      prefs.setString("basecache", stringToBase64.encode(json.encode(_bases)));
     }
+
     return _bases;
+  }
+
+  Future<void> _addToHistory(int base, String text) async {
+    prefs = await _prefs;
+    HistoryEntry newHistoryEntry = HistoryEntry(
+      base: _bases[base].name,
+      baseNum: base,
+      text: text,
+      uuid: currentResultUuid,
+      time: DateTime.now(),
+    );
+    history.add(newHistoryEntry);
+    prefs.setString("history", stringToBase64.encode(json.encode(history)));
   }
 
   Future<void> _genBase(int num) async {
     String url = '$_serverUrl/gen?num=$num';
+    currentResultUuid = uuid.v4();
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       setState(() {
         _result = response.body;
+        _addToHistory(num, _result);
       });
     }
   }
@@ -123,7 +176,10 @@ class _HomeState extends State<Home> {
         ),
         actions: [
           IconButton(
-            onPressed: () => Navigator.pushNamed(context, '/history'),
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/history');
+              _loadSettings();
+            },
             icon: const Icon(Icons.history),
             tooltip: AppLocalizations.of(context)!.history,
           ),
@@ -168,7 +224,7 @@ class _HomeState extends State<Home> {
                   showAboutDialog(
                     context: context,
                     applicationName: 'BAZMAN App',
-                    applicationVersion: '0.1.1',
+                    applicationVersion: '0.1.2',
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,7 +269,7 @@ class _HomeState extends State<Home> {
               }()),
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
+                  color: Theme.of(context).scaffoldBackgroundColor,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
