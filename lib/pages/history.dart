@@ -137,6 +137,7 @@ class _HistoryState extends State<History> {
             }
             return ListView.builder(
               itemCount: history.length + 1,
+              physics: const BouncingScrollPhysics(),
               itemBuilder: (context, index) {
                 if (index != history.length) {
                   return Align(
