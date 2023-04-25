@@ -45,6 +45,7 @@ class _HomeState extends State<Home> {
   bool listLoaded = false;
   List<HistoryEntry> history = [];
   String _serverUrl = '';
+  int _historyDepth = 10;
   String _result = 'Давно тебя не было в уличных гонках...';
   List<Base> _bases = [];
   var uuid = const Uuid();
@@ -54,6 +55,7 @@ class _HomeState extends State<Home> {
   Future<void> _loadSettings() async {
     prefs = await _prefs;
     _serverUrl = prefs.getString('serverUrl') ?? 'https://bmapi.ctw.re';
+    _historyDepth = prefs.getInt('serverUrl') ?? 10;
     if (_serverUrl == '') {
       _serverUrl = 'https://bmapi.ctw.re';
     }
@@ -104,6 +106,9 @@ class _HomeState extends State<Home> {
 
   Future<void> _addToHistory(int base, String text) async {
     prefs = await _prefs;
+    if (history.length >= _historyDepth) {
+      history.removeAt(0);
+    }
     HistoryEntry newHistoryEntry = HistoryEntry(
       base: _bases[base].name,
       baseNum: base,
