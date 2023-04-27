@@ -55,7 +55,7 @@ class _HomeState extends State<Home> {
   Future<void> _loadSettings() async {
     prefs = await _prefs;
     _serverUrl = prefs.getString('serverUrl') ?? 'https://bmapi.ctw.re';
-    _historyDepth = prefs.getInt('serverUrl') ?? 10;
+    _historyDepth = prefs.getInt('historyDepth') ?? 500;
     if (_serverUrl == '') {
       _serverUrl = 'https://bmapi.ctw.re';
     }
