@@ -40,7 +40,7 @@ dependencies:
   http: ^0.13.5
   url_launcher: ^6.1.5
   shared_preferences: ^2.0.15
-  intl: ^0.17.0
+  intl: ^0.18.0
   uuid: ^3.0.7
 
 dev_dependencies:
