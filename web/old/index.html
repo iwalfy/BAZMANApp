@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>AZMAN</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/x-icon" href="bazman-favicon.png">
+	<link rel="preconnect" href="https://fontapi.ctw.re">
+	<link rel="preconnect" href="https://fontcdn.ctw.re" crossorigin>
+	<link href="https://fontapi.ctw.re/css/Manrope" rel="stylesheet">
+        <style>
+            * {
+                font-family: "Manrope", sans-serif;
+            }
+            body {
+                background-color: black;
+                color: white;
+            }
+            .container1 {
+                margin: 5%;
+            }
+            .container2 {
+                background-color: #0d0d0d;
+                border-radius: 25px;
+                width: 600px;
+                position: absolute;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                margin-left: auto;
+                margin-right: auto;
+		bottom: 50px;
+		right: 10px;
+		left: 10px;
+                height: 40%;
+                overflow-y: scroll;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+	    .sex {
+		height: 45%;
+		overflow-y: auto;
+	    }
+            .card {
+                padding-left: 30px;
+                padding-right: 30px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+            }
+            hr {
+                border: none; /* Убираем границу для браузера Firefox */
+                color: black; /* Цвет линии для остальных браузеров */
+                background-color: black; /* Цвет линии для браузера Firefox и Opera */
+                height: 2px; /* Толщина линии */
+            }
+            .rightimg  {
+                float: right; /* Выравнивание по правому краю  */ 
+                margin: 7px 0 7px 7px; /* Отступы вокруг картинки */
+                cursor: pointer;
+            }
+            .container2::-webkit-scrollbar {
+                display: none;
+            }
+	    @media only screen and (max-width: 600px) {
+		.container2 {
+		    width: auto;
+		    bottom: 10px;
+		}
+	    }
+            /* Hide scrollbar for IE, Edge and Firefox */
+        </style>
+    </head>
+    <body>
+        <div class="container1">
+	    <div class="sex"><center>
+                <h1 id="text">Давно тебя не было в уличных гонках...</h1>
+	    </center></div>
+        </div>
+        <div class="container2">
+            <p style="margin-left: 20px;">Available bases:</p>
+            <p id="blocks">
+            </p>
+        </div>
+        <script>
+            function httpGet(theUrl)
+            {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+                xmlHttp.send( null );
+                return xmlHttp.responseText;
+            }
+            function update(num) {
+                document.getElementById("text").innerHTML = httpGet("https://bmapi.ctw.re/gen?num=" + num);
+            }
+            var num = 0;
+            var object = JSON.parse(httpGet("https://bmapi.ctw.re/bases"));
+            console.log(object);
+            for(let element of object) {
+                console.log(element);
+                name = element["name"];
+                desc = element["description"];
+                document.getElementById("blocks").innerHTML += `
+                <hr>
+                <div class="card">
+                    <img src="gen.png" width="48" onclick="update(${num});" height="48" class="rightimg"><h4>${name}</h4>
+                    <h5>${desc}</h5>
+                </div>
+                `;
+                num++;
+            }
+        </script>
+    </body>
+</html>
