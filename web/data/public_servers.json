@@ -1,0 +1,22 @@
+{
+  "updated": 1682794264,
+  "listVersion": 1,
+  "servers": [
+    {
+      "id": 0,
+      "name": "default",
+      "title": "Default BAZMAN Server (bazman.ctw.re)",
+      "url": "https://bmapi.ctw.re",
+      "owner": "Cat Weird <vk.com/catweird>",
+      "uuid": "1d8aab98-69aa-4b10-989f-dbfe86a67668"
+    },
+    {
+      "id": 1,
+      "name": "mlebd",
+      "title": "mlebd's PythonAnywhere BAZMAN Server",
+      "url": "https://mlebd.pythonanywhere.com",
+      "owner": "Mikhail Lebedinets <t.me/mlebd>",
+      "uuid": "61184ea4-9960-48fb-a7ca-2df12d0beed4"
+    }
+  ]
+}
