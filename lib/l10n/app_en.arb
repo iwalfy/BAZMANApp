@@ -17,5 +17,9 @@
   "uploadToServer": "Upload to server",
   "selectLanguage": "\nSelect language:",
   "nothingToSeeHere": "Nothing to see here",
-  "noMoreHistory": "No more history"
+  "noMoreHistory": "No more history",
+  "selectServer": "Select server",
+  "failedToLoadServers": "Failed to load servers!",
+  "failedToLoadServersCache": "Failed to load servers! Loaded from cache.",
+  "serverStatus": "Server status: "
 }

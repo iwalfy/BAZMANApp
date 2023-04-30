@@ -17,5 +17,7 @@
   "uploadToServer": "Завантажити на сервер",
   "selectLanguage": "\nВиберіть мову:",
   "nothingToSeeHere": "Тут нічого немає",
-  "noMoreHistory": "Конец истории"
+  "noMoreHistory": "Конец истории",
+  "selectServer": "Вибрати сервер",
+  "serverStatus": "Статус сервера: "
 }
