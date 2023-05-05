@@ -218,7 +218,7 @@ class _SettingsState extends State<Settings> {
         title: Text(AppLocalizations.of(context)!.settings),
         centerTitle: true,
         flexibleSpace: Image(
-          image: const AssetImage('assets/background.png'),
+          image: const AssetImage('assets/background.jpg'),
           fit: BoxFit.cover,
           color: Colors.white.withOpacity(0.4),
           colorBlendMode: BlendMode.modulate,
