@@ -14,9 +14,11 @@ jobs:
       - id: commit
         uses: pr-mpt/actions-commit-hash@v2
       - name: Install Flutter
-        uses: hrishikesh-kadam/setup-flutter@v1
+        uses: subosito/flutter-action@v2
         with:
-          ref: beta
+          channel: 'beta'
+          cache: true
+          architecture: x64
       - name: Install dependencies
         run: flutter pub get
       - name: Build APK
@@ -36,9 +38,11 @@ jobs:
       - id: commit
         uses: pr-mpt/actions-commit-hash@v2
       - name: Install Flutter
-        uses: hrishikesh-kadam/setup-flutter@v1
+        uses: subosito/flutter-action@v2
         with:
-          ref: beta
+          channel: 'beta'
+          cache: true
+          architecture: x64
       - name: Install dependencies
         run: flutter pub get
       - name: Build for macOS
