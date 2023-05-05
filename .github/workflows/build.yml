@@ -44,9 +44,11 @@ jobs:
         run: flutter pub get
       - name: Build for macOS
         run: flutter build macos
+      - name: Pack app to tarball
+        run: tar -czvf build-mac.tar build/macos/Build/Products/Release/BAZMAN.app
       - name: Upload result to artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-mac-${{ steps.commit.outputs.short }}
-          path: build/macos/Build/Products/Release/BAZMAN.app
+          path: build-mac.tar
           retention-days: 7
