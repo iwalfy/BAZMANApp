@@ -1,74 +1,47 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
-class Settings extends StatefulWidget {
-  const Settings({Key? key}) : super(key: key);
+import '../models/server.dart';
+import '../models/settings.dart';
+
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({Key? key}) : super(key: key);
 
   @override
-  State<Settings> createState() => _SettingsState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class ServerEntry {
-  final int id;
-  final String name;
-  final String title;
-  final String url;
-  final String owner;
-  final String uuid;
-
-  ServerEntry({
-    required this.id,
-    required this.name,
-    required this.title,
-    required this.url,
-    required this.owner,
-    required this.uuid,
-  });
-
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-    "title": title,
-    "url": url,
-    "owner": owner,
-    "uuid": uuid
-  };
-}
-
-class _SettingsState extends State<Settings> {
+class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _serverUrlController = TextEditingController();
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   String serverStatus = "Checking...";
-  String serverUrl = '';
   bool prefsLoaded = false;
   bool serverListCached = false;
   bool showFromCache = false;
-  late SharedPreferences prefs;
   List<ServerEntry> publicServers = [];
   List<ServerEntry> serverCache = [];
 
+  String selectedLang = "";
+
+  SettingsController settings = SettingsController();
+  ServerController serverController = ServerController();
+
   Future<void> _loadSettings() async {
-    prefs = await _prefs;
-    serverUrl = prefs.getString('serverUrl') ?? 'https://bmapi.ctw.re';
-    if (serverUrl == '') {
-      serverUrl = 'https://bmapi.ctw.re';
-    }
-    _serverUrlController.text = serverUrl;
+    await settings.loadSettings();
+    _serverUrlController.text = settings.serverUrl;
     prefsLoaded = true;
     checkServer();
   }
+
   Future<void> _saveSettings() async {
-    prefs.setString('serverUrl', _serverUrlController.text);
+    settings.saveSettings();
   }
 
   Future<void> checkServer() async {
+    serverStatus = "Checking...";
     if (prefsLoaded) {
       try {
-        String url = '$serverUrl/bmd';
+        String url = '${settings.serverUrl}/bmd';
         final response = await http.get(Uri.parse(url));
         if (response.body.contains("BAZMAN SERVER")) {
           serverStatus = "OK";
@@ -83,35 +56,15 @@ class _SettingsState extends State<Settings> {
   }
 
   Future<List<ServerEntry>> getServerList() async {
-    if (publicServers.isEmpty && prefsLoaded) {
-      String url = 'https://bazman.ctw.re/data/public_servers.json';
-      final response = await http.get(Uri.parse(url));
-      var responseData = json.decode(response.body);
-      var servers = responseData["servers"];
-
-      publicServers = [];
-      for (var currentServer in servers) {
-        ServerEntry server = ServerEntry(
-          id: currentServer["id"],
-          name: currentServer["name"],
-          title: currentServer["title"],
-          url: currentServer["url"],
-          owner: currentServer["owner"],
-          uuid: currentServer["uuid"]
-        );
-        publicServers.add(server);
-      }
-      prefs.setString("servercache", json.encode(publicServers));
-    }
-
+    publicServers = await serverController.getServerList();
+    serverCache = serverController.serverCache;
     return publicServers;
   }
 
   Future<void> setServer(String url) async {
-    serverUrl = url;
+    settings.serverUrl = url;
     _serverUrlController.text = url;
     setState(() {
-      serverStatus = "Checking...";
       checkServer();
     });
   }
@@ -127,20 +80,6 @@ class _SettingsState extends State<Settings> {
           builder: (BuildContext ctx, AsyncSnapshot snapshot) {
             var servers = snapshot.data;
             if (snapshot.hasError) {
-              var serverCacheData = json.decode(prefs.getString('servercache') ?? '[]');
-              if (serverCache.isEmpty) {
-                for (var currentServer in serverCacheData) {
-                  ServerEntry server = ServerEntry(
-                    id: currentServer["id"],
-                    name: currentServer["name"],
-                    title: currentServer["title"],
-                    url: currentServer["url"],
-                    owner: currentServer["owner"],
-                    uuid: currentServer["uuid"],
-                  );
-                  serverCache.add(server);
-                }
-              }
               if (serverCache.isEmpty) {
                 return Center(
                   child: Text(
@@ -224,51 +163,56 @@ class _SettingsState extends State<Settings> {
           colorBlendMode: BlendMode.modulate,
         ),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(15),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(AppLocalizations.of(context)!.customServerText),
-            TextFormField(
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.customServer,
-                suffixIcon: TextButton(
-                  onPressed: (){
-                    showServerList(context);
-                  },
-                  child: Text(AppLocalizations.of(context)!.selectServer),
-                )
-              ),
-              controller: _serverUrlController,
-              autocorrect: false,
-            ),
-            RichText(text: TextSpan(
+      body: Center(
+        child: SizedBox(
+          width: 800,
+          child: Container(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextSpan(
-                  text: AppLocalizations.of(context)!.serverStatus,
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall?.color
-                  )
+                Text(AppLocalizations.of(context)!.customServerText),
+                TextFormField(
+                  decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.customServer,
+                      suffixIcon: TextButton(
+                        onPressed: (){
+                          showServerList(context);
+                        },
+                        child: Text(AppLocalizations.of(context)!.selectServer),
+                      )
+                  ),
+                  controller: _serverUrlController,
+                  autocorrect: false,
                 ),
-                TextSpan(
-                  text: serverStatus,
-                  style: TextStyle(
-                    color: ((){
-                      if (serverStatus == "Checking...") {
-                        return Colors.orangeAccent;
-                      } else if (serverStatus == "OK") {
-                        return Colors.green;
-                      } else {
-                        return Colors.red;
-                      }
-                    }()),
-                  )
-                )
-              ]
-            ))
-            //Text(AppLocalizations.of(context)!.selectLanguage),
-          ],
+                RichText(text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: AppLocalizations.of(context)!.serverStatus,
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodySmall?.color
+                      )
+                    ),
+                    TextSpan(
+                      text: serverStatus,
+                      style: TextStyle(
+                        color: ((){
+                          if (serverStatus == "Checking...") {
+                            return Colors.orangeAccent;
+                          } else if (serverStatus == "OK") {
+                            return Colors.green;
+                          } else {
+                            return Colors.red;
+                          }
+                        }()),
+                      )
+                    )
+                  ]
+                )),
+                //Text(AppLocalizations.of(context)!.selectLanguage),
+              ],
+            ),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(

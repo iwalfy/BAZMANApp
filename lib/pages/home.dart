@@ -1,14 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:uuid/uuid.dart';
 
-import 'package:bazman/pages/history.dart';
+import '../models/base.dart';
+import '../models/history.dart';
+import '../models/settings.dart';
+import '../utils.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -17,111 +18,51 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class Base {
-  final String name;
-  final String description;
-  final String author;
-  final String path;
-
-  Base({
-    required this.name,
-    required this.description,
-    required this.author,
-    required this.path,
-  });
-
-  Map<String, dynamic> toJson() => {
-    "name": name,
-    "description": description,
-    "author": author,
-    "path": path
-  };
-}
-
 class _HomeState extends State<Home> {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  late SharedPreferences prefs;
   bool prefsLoaded = false;
-  bool listLoaded = false;
   List<HistoryEntry> history = [];
-  String _serverUrl = '';
-  int _historyDepth = 10;
   String _result = 'Давно тебя не было в уличных гонках...';
-  List<Base> _bases = [];
+  List<Base> bases = [];
   var uuid = const Uuid();
   late String currentResultUuid;
-  Codec<String, String> stringToBase64 = utf8.fuse(base64);
+
+  SettingsController settings = SettingsController();
+  HistoryController historyController = HistoryController();
+
+  late PackageInfo packageInfo;
 
   Future<void> _loadSettings() async {
-    prefs = await _prefs;
-    _serverUrl = prefs.getString('serverUrl') ?? 'https://bmapi.ctw.re';
-    _historyDepth = prefs.getInt('historyDepth') ?? 500;
-    if (_serverUrl == '') {
-      _serverUrl = 'https://bmapi.ctw.re';
-    }
-    var historyB64 = stringToBase64.decode(prefs.getString('history') ?? '');
-    var historyData = [];
-    if (historyB64 != '') {
-      historyData = json.decode(historyB64);
-    }
-
-    history = [];
-    for (var historyEntryData in historyData) {
-      HistoryEntry historyEntry = HistoryEntry(
-        base: historyEntryData["base"],
-        text: historyEntryData["text"],
-        baseNum: historyEntryData["baseNum"],
-        uuid: historyEntryData["uuid"],
-        time: DateTime.fromMillisecondsSinceEpoch(historyEntryData["time"])
-      );
-      history.add(historyEntry);
-    }
+    await settings.loadSettings();
+    history = await historyController.loadHistory();
+    packageInfo = await PackageInfo.fromPlatform();
     prefsLoaded = true;
   }
 
   Future<List<Base>> _getBases() async {
     await _loadSettings();
-    if (_bases.isEmpty && prefsLoaded) {
-      String url = '$_serverUrl/bases';
-      final response = await http.get(Uri.parse(url));
-
-      var responseData = json.decode(response.body);
-
-      //List<Base> bases = [];
-      _bases = [];
-      for (var currentBase in responseData) {
-        Base base = Base(
-          name: currentBase['name'],
-          description: currentBase['description'],
-          author: currentBase['author'],
-          path: currentBase['path'],
-        );
-        _bases.add(base);
-      }
-      prefs.setString("basecache", stringToBase64.encode(json.encode(_bases)));
+    if (bases.isEmpty && prefsLoaded) {
+      bases = await BaseController(serverUrl: settings.serverUrl).loadBases();
     }
-
-    return _bases;
+    return bases;
   }
 
   Future<void> _addToHistory(int base, String text) async {
-    prefs = await _prefs;
-    if (history.length >= _historyDepth) {
-      history.removeAt(0);
+    if (history.length > settings.historyDepth) {
+      history.removeRange(settings.historyDepth, history.length);
     }
     HistoryEntry newHistoryEntry = HistoryEntry(
-      base: _bases[base].name,
+      base: bases[base].name,
       baseNum: base,
       text: text,
       uuid: currentResultUuid,
       time: DateTime.now(),
     );
     history.add(newHistoryEntry);
-    prefs.setString("history", stringToBase64.encode(json.encode(history)));
+    historyController.saveHistory();
   }
 
   Future<void> _genBase(int num) async {
-    String url = '$_serverUrl/gen?num=$num';
+    String url = '${settings.serverUrl}/gen?num=$num';
     currentResultUuid = uuid.v4();
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -130,27 +71,6 @@ class _HomeState extends State<Home> {
         _addToHistory(num, _result);
       });
     }
-  }
-
-  Future<void> _launchUrl(String url) async {
-    if (!await launchUrl(
-      Uri.parse(url),
-      mode: LaunchMode.externalApplication,
-    )) {
-      throw 'Could not launch $url';
-    }
-  }
-
-  Future<void> _showToast(String msg) async {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-    ));
-  }
-
-  Future<void> _copyToClipboard() async {
-    Clipboard.setData(ClipboardData(text: _result));
-    _showToast(AppLocalizations.of(context)!.copiedToClipboard);
   }
 
   @override
@@ -183,7 +103,6 @@ class _HomeState extends State<Home> {
           IconButton(
             onPressed: () async {
               await Navigator.pushNamed(context, '/history');
-              _loadSettings();
             },
             icon: const Icon(Icons.history),
             tooltip: AppLocalizations.of(context)!.history,
@@ -221,32 +140,33 @@ class _HomeState extends State<Home> {
                   break;
                 case 2:
                   Navigator.pushNamed(context, '/settings').then((_){
-                    _bases = [];
-                    setState((){});
+                    setState((){
+                      bases = [];
+                    });
                   });
                   break;
                 case 3:
                   showAboutDialog(
                     context: context,
                     applicationName: 'BAZMAN App',
-                    applicationVersion: '0.1.2',
+                    applicationVersion: packageInfo.version,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(AppLocalizations.of(context)!.appDesc),
                           TextButton.icon(
-                            onPressed: () => _launchUrl("https://github.com/Catware-Foundation"),
+                            onPressed: () => openUrl("https://github.com/Catware-Foundation"),
                             label: const Text('GitHub'),
                             icon: const Icon(Icons.link),
                           ),
                           TextButton.icon(
-                            onPressed: () => _launchUrl("https://ctw.re"),
+                            onPressed: () => openUrl("https://ctw.re"),
                             label: const Text('Catware'),
                             icon: const Icon(Icons.link),
                           ),
                           TextButton.icon(
-                            onPressed: () => _launchUrl("https://github.com/iwalfy/BAZMANApp"),
+                            onPressed: () => openUrl("https://github.com/iwalfy/BAZMANApp"),
                             label: Text(AppLocalizations.of(context)!.sourceCode),
                             icon: const Icon(Icons.code),
                           ),
@@ -317,7 +237,7 @@ class _HomeState extends State<Home> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         IconButton(
-                          onPressed: () => _copyToClipboard(),
+                          onPressed: () => copyToClipboard(_result, context),
                           icon: const Icon(Icons.copy),
                           tooltip: AppLocalizations.of(context)!.copyToClipboard,
                         ),
@@ -367,7 +287,7 @@ class _HomeState extends State<Home> {
                         title: Text(snapshot.data[index].name),
                         subtitle: Text(snapshot.data[index].description),
                         onTap: () => _genBase(index),
-                        onLongPress: () => _showToast(snapshot.data[index].author),
+                        onLongPress: () => showToast(snapshot.data[index].author, context),
                         contentPadding: const EdgeInsets.only(left: 15, right: 15, top: 8, bottom: 8),
                       ),
                     );
