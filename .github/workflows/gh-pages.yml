@@ -14,6 +14,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'beta'
+          cache: true
       - name: Install dependencies
         run: flutter pub get
       - name: Build and deploy to Github Pages
