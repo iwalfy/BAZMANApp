@@ -1,6 +1,7 @@
 name: Build and store in artifacts
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - '*'
