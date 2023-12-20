@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 class Themes {
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
+    useMaterial3: false,
     primaryColor: Colors.deepPurpleAccent,
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.deepPurpleAccent,
@@ -28,6 +29,7 @@ class Themes {
 
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
+    useMaterial3: false,
     inputDecorationTheme: const InputDecorationTheme(
       focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.deepPurpleAccent)),
     ),
